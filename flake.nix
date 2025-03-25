@@ -10,6 +10,7 @@
         destination = "/etc/nix/nix.conf";
         text = ''
           experimental-features = nix-command flakes
+          build-users-group =
         '';
       };
       prodPkgs = with pkgs; [
@@ -25,6 +26,12 @@
         podman
         awscli2
       ] ++ prodPkgs;
+      sayHello = pkgs.writeShellScriptBin "say-hello" ''
+        echo "Hello from Nix integration with Amplify!"
+        echo "Running on branch: $AWS_BRANCH"
+        echo "App ID: $AWS_APP_ID"
+        echo "Current time: $(date)"
+      '';
     in
     {
       devShells = {
@@ -54,6 +61,12 @@
             Cmd = [ "${pkgs.bash}/bin/bash" ];
             WorkingDir = "/";
           };
+        };
+      };
+      apps = {
+        hello = {
+          type = "app";
+          program = "${sayHello}/bin/say-hello";
         };
       };
     }
