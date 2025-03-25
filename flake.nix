@@ -36,9 +36,25 @@
         };  
       };
       packages = {
-        default = pkgs.dockerTools.buildLayeredImage {
+        default = pkgs.dockerTools.buildImage {
           name = "amplify-builder";
-          contents = prodPkgs;
+          tag = "latest";
+          fromImage = pkgs.dockerTools.pullImage {
+            imageName = "public.ecr.aws/amazonlinux/amazonlinux";
+            imageDigest = "sha256:0d19ca211e6c020e9123a52e595afcf9495dc3fa2657e0633d5d2151d52c45c4";
+            sha256 = "sha256-+XZheGIejgbsZZ66RnQ23SKE9OMvaHd/xK5yIyjYB3w=";
+            finalImageTag = "2023";
+            finalImageName = "amazonlinux";
+          };
+          copyToRoot = pkgs.buildEnv {
+            name = "image-root";
+            paths = prodPkgs;
+            pathsToLink = [ "/bin" "/etc" "/lib" "/share" ];
+          };
+          config = {
+            Cmd = [ "${pkgs.bash}/bin/bash" ];
+            WorkingDir = "/";
+          };
         };
       };
     }
