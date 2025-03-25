@@ -189,6 +189,9 @@ nix run github:<org>/<repo>
 ```
 
 > [!NOTE]
+> `nix` relies on `NIX_CONFIG` (which specifies access tokens) to authenticate with `GitHub`
+
+> [!NOTE]
 > We can link our `nix flake` to a private repository like ...
 > 
 > ```nix
@@ -200,3 +203,4 @@ nix run github:<org>/<repo>
 >   # ...
 > }
 >
+ 
