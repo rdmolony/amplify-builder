@@ -6,12 +6,12 @@
     - [Authenticate with `AWS`](#authenticate-with-aws)
     - [Create a Public ECR Repository](#create-a-public-ecr-repository)
     - [Build](#build)
+    - [Deploy](#deploy)
     - [Test it](#test-it)
       - [Run a shell in the image](#run-a-shell-in-the-image)
       - [Fetch a package from `<nixpkgs>`](#fetch-a-package-from-nixpkgs)
       - [Run a nix flake application](#run-a-nix-flake-application)
       - [Fetch a nix flake from `GitHub` and run it](#fetch-a-nix-flake-from-github-and-run-it)
-    - [Deploy](#deploy)
 
 
 ---
@@ -125,6 +125,29 @@ export ECR_PATH=public.ecr.aws/powerscope/$IMAGE_NAME
 
 ---
 
+### Deploy
+
+> [!WARNING]
+> Do consider **[testing your image before deploying it](#test-it)** 
+
+- Authenticate with AWS ...
+
+```sh
+aws ecr-public get-login-password --region us-east-1 | podman login --username AWS --password-stdin public.ecr.aws
+```
+
+- Deploy the image ...
+
+```sh
+podman tag $IMAGE_NAME:$IMAGE_TAG $ECR_PATH:$IMAGE_TAG
+podman tag $IMAGE_NAME:$IMAGE_TAG $ECR_PATH:'latest'
+podman push $ECR_PATH:$IMAGE_TAG
+podman push $ECR_PATH:'latest'
+```
+
+
+---
+
 ### Test it
 
 #### Run a shell in the image
@@ -160,7 +183,9 @@ podman run -t --rm -v .:/builder -w /builder -i $IMAGE_NAME:$IMAGE_TAG nix run .
 - Run ...
 
 ```sh
-podman run -t --rm -v .:/builder -w /builder -i $IMAGE_NAME:$IMAGE_TAG nix run .#hello
+podman run -t --rm -v .:/builder -w /builder -i $IMAGE_NAME:$IMAGE_TAG bash
+source .env
+nix run github:<org>/<repo>
 ```
 
 > [!NOTE]
@@ -170,27 +195,8 @@ podman run -t --rm -v .:/builder -w /builder -i $IMAGE_NAME:$IMAGE_TAG nix run .
 > {
 >   inputs = {
 >     private-repo = {
->       url = "github:rdmolony/hello-from-nix";
+>       url = "github:<org>/<repo>";
 >     };
 >   # ...
 > }
 >
-
----
-
-### Deploy
-
-- Authenticate with AWS ...
-
-```sh
-aws ecr-public get-login-password --region us-east-1 | podman login --username AWS --password-stdin public.ecr.aws
-```
-
-- Deploy the image ...
-
-```sh
-podman tag $IMAGE_NAME:$IMAGE_TAG $ECR_PATH:$IMAGE_TAG
-podman tag $IMAGE_NAME:$IMAGE_TAG $ECR_PATH:'latest'
-podman push $ECR_PATH:$IMAGE_TAG
-podman push $ECR_PATH:'latest'
-```
