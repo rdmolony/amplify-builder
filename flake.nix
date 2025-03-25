@@ -38,7 +38,6 @@
       packages = {
         default = pkgs.dockerTools.buildImage {
           name = "amplify-builder";
-          tag = "latest";
           fromImage = pkgs.dockerTools.pullImage {
             imageName = "public.ecr.aws/amazonlinux/amazonlinux";
             imageDigest = "sha256:0d19ca211e6c020e9123a52e595afcf9495dc3fa2657e0633d5d2151d52c45c4";
