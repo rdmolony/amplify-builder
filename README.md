@@ -111,8 +111,7 @@ nix build
 export IMAGE_FULL=$(podman image load -i result)
 export IMAGE_NAME=$(echo $IMAGE_FULL | awk -F'/' '{print $2}' | awk -F':' '{print $1}')
 export IMAGE_TAG=$(echo $IMAGE_FULL | awk -F':' '{print $3}')
-export ECR_PATH=public.ecr.aws/powerscope/$IMAGE_NAME:$IMAGE_TAG
-podman tag $IMAGE_NAME:$IMAGE_TAG $ECR_PATH
+export ECR_PATH=public.ecr.aws/powerscope/$IMAGE_NAME
 ```
 
 > [!NOTE]
@@ -137,5 +136,8 @@ aws ecr-public get-login-password --region us-east-1 | podman login --username A
 - Deploy the image ...
 
 ```sh
-podman push $ECR_PATH
+podman tag $IMAGE_NAME:$IMAGE_TAG $ECR_PATH:$IMAGE_TAG
+podman tag $IMAGE_NAME:$IMAGE_TAG $ECR_PATH:'latest'
+podman push $ECR_PATH:$IMAGE_TAG
+podman push $ECR_PATH:'latest'
 ```
