@@ -3,11 +3,15 @@
 - [Aws Amplify Build Image](#aws-amplify-build-image)
   - [Install](#install)
   - [Build \& Deploy Image](#build--deploy-image)
-      - [Authenticate with `AWS`](#authenticate-with-aws)
-      - [Create a Public ECR Repository](#create-a-public-ecr-repository)
-      - [Build](#build)
-      - [Test it](#test-it)
-      - [Deploy](#deploy)
+    - [Authenticate with `AWS`](#authenticate-with-aws)
+    - [Create a Public ECR Repository](#create-a-public-ecr-repository)
+    - [Build](#build)
+    - [Test it](#test-it)
+      - [Run a shell in the image](#run-a-shell-in-the-image)
+      - [Fetch a package from `<nixpkgs>`](#fetch-a-package-from-nixpkgs)
+      - [Run a nix flake application](#run-a-nix-flake-application)
+      - [Fetch a nix flake from `GitHub` and run it](#fetch-a-nix-flake-from-github-and-run-it)
+    - [Deploy](#deploy)
 
 
 ---
@@ -46,7 +50,7 @@ nix develop
 ## Build & Deploy Image
 
 
-#### Authenticate with `AWS`
+### Authenticate with `AWS`
 
 - Create a `.env` file
 
@@ -73,7 +77,7 @@ cp .env.example .env
   source .env
   ```
 
-#### Create a Public ECR Repository
+### Create a Public ECR Repository
 
 
 - Authenticate with `AWS` ...
@@ -95,7 +99,7 @@ aws ecr-public create-repository \
 
 ---
 
-#### Build
+### Build
 
 > [!NOTE]
 > You can replace `podman` in any of the following commands with `docker` if that's what you've installed!
@@ -121,36 +125,60 @@ export ECR_PATH=public.ecr.aws/powerscope/$IMAGE_NAME
 
 ---
 
-#### Test it
+### Test it
 
-- Launch a shell in the image ...
+#### Run a shell in the image
+
+- Run ...
 
 ```sh
 podman run -t --rm -i $IMAGE_NAME:$IMAGE_TAG bash
 ```
 
-- ... and fetch a package from `<nixpkgs>` ...
+#### Fetch a package from `<nixpkgs>`
+
+- Run ...
+
 
 ```sh
-nix run nixpkgs#hello
+podman run -t --rm -i $IMAGE_NAME:$IMAGE_TAG nix run nixpkgs#hello
 ```
 
-- Link this repository to the image's `/builder` directory ...
+#### Run a nix flake application
+
+- Run ...
 
 ```sh
-podman run -t --rm -v .:/builder -i $IMAGE_NAME:$IMAGE_TAG bash
+podman run -t --rm -v .:/builder -w /builder -i $IMAGE_NAME:$IMAGE_TAG nix run .#hello
 ```
 
-- ... and run a nix flake ...
+#### Fetch a nix flake from `GitHub` and run it
+
+- Create a personal access token
+- Copy `.env.example` to `.env`
+- Fill in `GITHUB_TOKEN`
+- Run ...
 
 ```sh
-cd builder
-nix run nixpkgs#hello
+podman run -t --rm -v .:/builder -w /builder -i $IMAGE_NAME:$IMAGE_TAG nix run .#hello
 ```
+
+> [!NOTE]
+> We can link our `nix flake` to a private repository like ...
+> 
+> ```nix
+> {
+>   inputs = {
+>     private-repo = {
+>       url = "github:rdmolony/hello-from-nix";
+>     };
+>   # ...
+> }
+>
 
 ---
 
-#### Deploy
+### Deploy
 
 - Authenticate with AWS ...
 
